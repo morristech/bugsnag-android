@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -17,9 +18,6 @@ public class MainActivity extends Activity {
     private Configuration config;
     private ConnectivityManager connectivityManager;
 
-    private volatile boolean hasSentError;
-    private volatile boolean hasSentSession;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,18 +26,14 @@ public class MainActivity extends Activity {
 
     private void prepareApiHooks(boolean sendSessions) {
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
         config = new Configuration("abc123");
-        Bugsnag.init(this, config);
-        Logger.setEnabled(true);
 
         if (!sendSessions) {
-            Logger.info("Waiting for payload flush");
-
             waitForPayloadFlush();
-        } else { // generate session data for next launch
-            Logger.info("Session data");
+            Bugsnag.init(this, config);
 
+        } else { // generate session data for next launch
+            Bugsnag.init(this, config);
             Bugsnag.setSessionTrackingApiClient(getFakeSessionApiClient());
             Bugsnag.setUser("592093", "fake@bugsnag.com", "Jimmy");
             Bugsnag.addToTab("custom", "foo", "bar");
@@ -58,37 +52,13 @@ public class MainActivity extends Activity {
     private void waitForPayloadFlush() {
         config.setEndpoint(BASE_URL + "exc_unhandled");
         config.setSessionEndpoint(BASE_URL + "session_manual");
-        Logger.info("Waiting for payload flush");
 
-        Bugsnag.setSessionTrackingApiClient(new HarnessSessionApiClient(connectivityManager) {
-            @Override
-            void onRequestCompleted() {
-                Logger.info("Session tracking flushed");
-                hasSentSession = true;
-                checkIfSentPayloads();
-            }
-        });
-        Bugsnag.setErrorReportApiClient(new ErrorReportApiClient() {
-            @Override
-            public void postReport(String urlString,
-                                   Report report,
-                                   Map<String, String> headers) throws NetworkException, BadResponseException {
-                Logger.info("Error report flushed");
-                hasSentError = true;
-                checkIfSentPayloads();
-            }
-        });
-    }
-
-    private void checkIfSentPayloads() {
-        runOnUiThread(new Runnable() {
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (hasSentError && hasSentSession) {
-                    System.exit(1);
-                }
+                System.exit(1);
             }
-        });
+        }, 5000);
     }
 
     private void notifyNonFatal() {
