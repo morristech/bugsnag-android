@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.bugsnag.android.testharness">
+  package="com.bugsnag.android.hugsnag">
 
-  <uses-permission android:name="android.permission.INTERNET" />
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-  <application
-    android:name=".TestHarnessApp"
-    android:allowBackup="true"
-    android:label="Test harness"
-    android:supportsRtl="true"
-    android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-    <activity android:name=".TestHarnessActivity">
+  <application android:label="App">
+    <activity android:name="com.bugsnag.android.MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
-
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
