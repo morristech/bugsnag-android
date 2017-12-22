@@ -27,12 +27,16 @@ public class MainActivity extends Activity {
     private void prepareApiHooks(boolean sendSessions) {
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         config = new Configuration("abc123");
+        Logger.setEnabled(true);
 
-        if (!sendSessions) {
+        if (sendSessions) {
+            Logger.info("flushing sessions");
             waitForPayloadFlush();
             Bugsnag.init(this, config);
 
         } else { // generate session data for next launch
+            Logger.info("crashing app");
+
             Bugsnag.init(this, config);
             Bugsnag.setSessionTrackingApiClient(getFakeSessionApiClient());
             Bugsnag.setUser("592093", "fake@bugsnag.com", "Jimmy");
@@ -56,6 +60,7 @@ public class MainActivity extends Activity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                Logger.info("Exiting app");
                 System.exit(1);
             }
         }, 5000);
